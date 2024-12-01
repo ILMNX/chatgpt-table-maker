@@ -9,7 +9,55 @@ export default function TableConverter() {
 
   const convertToTable = () => {
     try {
-      // ... existing conversion logic ...
+      console.log('Converting to table...');
+      // Split into rows
+      const rows = inputText.trim().split('\n');
+      console.log('Rows:', rows);
+      if (rows.length === 0) {
+        setOutputHtml('<p class="text-red-500">Please enter some text</p>');
+        return;
+      }
+
+      // Split each row into columns (using tab or multiple spaces as separator)
+      const tableData = rows.map(row => 
+        row.split(/\t|(?<=\S)\s{2,}(?=\S)/).map(cell => cell.trim()).filter(Boolean)
+      );
+      console.log('Table Data:', tableData);
+
+      // Validate data
+      if (tableData.some(row => row.length !== tableData[0].length)) {
+        setOutputHtml('<p class="text-red-500">All rows must have the same number of columns</p>');
+        return;
+      }
+
+      // Generate HTML table with styling
+      const tableHtml = `
+        <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+          <thead class="text-xs text-gray-700 uppercase bg-gray-100 dark:bg-gray-700 dark:text-gray-400">
+            <tr>
+              ${tableData[0].map(header => `
+                <th scope="col" class="px-6 py-3">
+                  ${header}
+                </th>
+              `).join('')}
+            </tr>
+          </thead>
+          <tbody>
+            ${tableData.slice(1).map(row => `
+              <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                ${row.map(cell => `
+                  <td class="px-6 py-4">
+                    ${cell}
+                  </td>
+                `).join('')}
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+      
+      console.log('Generated HTML:', tableHtml); // Debug log
+      setOutputHtml(tableHtml);
     } catch (error) {
       console.error('Error converting table:', error);
       setOutputHtml('<p class="text-red-500">Error converting text to table. Please check input format.</p>');
@@ -64,7 +112,12 @@ export default function TableConverter() {
             >
               Convert to Table
             </button>
-            
+            <button
+              onClick={copyToClipboard}
+              className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700"
+            >
+              Copy HTML
+            </button>
           </div>
 
           {/* Output Preview */}
@@ -72,22 +125,13 @@ export default function TableConverter() {
             <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
               Preview
             </label>
-            
             <div className="p-4 bg-gray-50 rounded-lg border border-gray-200 dark:bg-gray-700 dark:border-gray-600">
               <div 
                 className="overflow-x-auto"
                 dangerouslySetInnerHTML={{ __html: outputHtml }}
               />
             </div>
-            
           </div>
-          <br />
-          <button
-              onClick={copyToClipboard}
-              className="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700"
-            >
-              Copy HTML
-            </button>
         </div>
       </div>
     </div>
